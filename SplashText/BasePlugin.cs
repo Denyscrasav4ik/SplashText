@@ -11,7 +11,7 @@ public class MenuTextPlugin : BaseUnityPlugin
 {
     public const string ModGUID = "denyscrasav4ik.basicallyukrainian.splashtext";
     public const string ModName = "Splash Text";
-    public const string ModVersion = "1.0.0";
+    public const string ModVersion = "1.0.1";
 
     public static MenuTextPlugin Instance;
 
