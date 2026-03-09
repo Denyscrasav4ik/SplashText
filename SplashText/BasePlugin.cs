@@ -29,6 +29,60 @@ public class MenuTextPlugin : BaseUnityPlugin
         Logger.LogInfo("Splash Text loaded");
     }
 
+    /// <summary>
+    /// Registers all splash texts from a file for the English language.
+    /// Each line in the file will be treated as a separate splash text.
+    /// Empty lines are ignored.
+    /// </summary>
+    /// <param name="filePath">Absolute path to the text file containing splash texts.</param>
+    public static void RegisterSplashesFromFileEN(string filePath)
+    {
+        if (!File.Exists(filePath))
+        {
+            Instance?.Logger.LogWarning($"Splash file not found: {filePath}");
+            return;
+        }
+
+        var lines = File.ReadAllLines(filePath)
+            .Where(l => !string.IsNullOrWhiteSpace(l));
+
+        foreach (var line in lines)
+        {
+            RegisterSplashEN(line);
+        }
+
+        Instance?.Logger.LogInfo($"Registered {lines.Count()} EN splashes from file.");
+    }
+
+    /// <summary>
+    /// Registers all splash texts from a file for the Ukrainian language.
+    /// Each line in the file will be treated as a separate splash text.
+    /// Empty lines are ignored.
+    /// </summary>
+    /// <param name="filePath">Absolute path to the text file containing splash texts.</param>
+    public static void RegisterSplashesFromFileUA(string filePath)
+    {
+        if (!File.Exists(filePath))
+        {
+            Instance?.Logger.LogWarning($"Splash file not found: {filePath}");
+            return;
+        }
+
+        var lines = File.ReadAllLines(filePath)
+            .Where(l => !string.IsNullOrWhiteSpace(l));
+
+        foreach (var line in lines)
+        {
+            RegisterSplashUA(line);
+        }
+
+        Instance?.Logger.LogInfo($"Registered {lines.Count()} UA splashes from file.");
+    }
+
+    /// <summary>
+    /// Registers a single English splash text that can appear on the main menu.
+    /// </summary>
+    /// <param name="splash">The splash text to add.</param>
     public static void RegisterSplashEN(string splash)
     {
         if (!string.IsNullOrWhiteSpace(splash))
@@ -38,6 +92,10 @@ public class MenuTextPlugin : BaseUnityPlugin
         }
     }
 
+    /// <summary>
+    /// Registers a single Ukrainian splash text that can appear on the main menu.
+    /// </summary>
+    /// <param name="splash">The splash text to add.</param>
     public static void RegisterSplashUA(string splash)
     {
         if (!string.IsNullOrWhiteSpace(splash))

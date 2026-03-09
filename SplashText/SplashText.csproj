@@ -9,6 +9,10 @@
     <GenerateDependencyFile>false</GenerateDependencyFile>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <Reference Update="@(Reference)">
       <Private>false</Private>
