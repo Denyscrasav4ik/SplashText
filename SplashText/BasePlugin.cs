@@ -3,6 +3,7 @@ using BepInEx.Bootstrap;
 using HarmonyLib;
 using UnityEngine;
 using TMPro;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -11,9 +12,12 @@ public class MenuTextPlugin : BaseUnityPlugin
 {
     public const string ModGUID = "denyscrasav4ik.basicallyukrainian.splashtext";
     public const string ModName = "Splash Text";
-    public const string ModVersion = "1.0.1";
+    public const string ModVersion = "1.1.0";
 
     public static MenuTextPlugin Instance;
+
+    public static List<string> ModdedSplashesEN = new List<string>();
+    public static List<string> ModdedSplashesUA = new List<string>();
 
     private void Awake()
     {
@@ -23,6 +27,24 @@ public class MenuTextPlugin : BaseUnityPlugin
         harmony.PatchAll();
 
         Logger.LogInfo("Splash Text loaded");
+    }
+
+    public static void RegisterSplashEN(string splash)
+    {
+        if (!string.IsNullOrWhiteSpace(splash))
+        {
+            ModdedSplashesEN.Add(splash);
+            Instance?.Logger.LogInfo($"Registered EN splash: {splash}");
+        }
+    }
+
+    public static void RegisterSplashUA(string splash)
+    {
+        if (!string.IsNullOrWhiteSpace(splash))
+        {
+            ModdedSplashesUA.Add(splash);
+            Instance?.Logger.LogInfo($"Registered UA splash: {splash}");
+        }
     }
 
     public void CreateTMPObject()
@@ -43,7 +65,7 @@ public class MenuTextPlugin : BaseUnityPlugin
         RectTransform rect = textObj.AddComponent<RectTransform>();
         rect.anchorMin = new Vector2(0.5f, 0.5f);
         rect.anchorMax = new Vector2(0.5f, 0.5f);
-        rect.anchoredPosition = new Vector2(190, 110);
+        rect.anchoredPosition = new Vector2(180, 110);
         rect.rotation = Quaternion.Euler(0, 0, 30);
         rect.sizeDelta = new Vector2(100, 100);
 
@@ -54,6 +76,28 @@ public class MenuTextPlugin : BaseUnityPlugin
         tmp.color = Color.black;
 
         textObj.AddComponent<ScaleAnimator>();
+
+        MoveMenuTexts(canvasObj);
+    }
+
+    void MoveMenuTexts(GameObject menu)
+    {
+        Transform version = menu.transform.Find("Version");
+        Transform reminder = menu.transform.Find("Reminder");
+
+        float offset = -30f;
+
+        if (version != null)
+        {
+            RectTransform rect = version.GetComponent<RectTransform>();
+            rect.anchoredPosition += new Vector2(0, offset);
+        }
+
+        if (reminder != null)
+        {
+            RectTransform rect = reminder.GetComponent<RectTransform>();
+            rect.anchoredPosition += new Vector2(0, offset);
+        }
     }
 
     string GetRandomLine()
@@ -69,44 +113,53 @@ public class MenuTextPlugin : BaseUnityPlugin
             fileName
         );
 
-        if (!File.Exists(path))
+        var lines = new System.Collections.Generic.List<string>();
+
+        if (File.Exists(path))
+        {
+            lines.AddRange(
+                File.ReadAllLines(path)
+                .Where(l => !string.IsNullOrWhiteSpace(l))
+            );
+        }
+        else
         {
             Logger.LogWarning($"Text file not found: {path}");
-            return "Missing text file.";
         }
 
-        string[] lines = File.ReadAllLines(path)
-            .Where(l => !string.IsNullOrWhiteSpace(l))
-            .ToArray();
+        if (ukrainizationInstalled)
+            lines.AddRange(ModdedSplashesUA);
+        else
+            lines.AddRange(ModdedSplashesEN);
 
-        if (lines.Length == 0)
-            return "No text lines.";
+        if (lines.Count == 0)
+            return "No splash texts.";
 
-        return lines[Random.Range(0, lines.Length)];
+        return lines[Random.Range(0, lines.Count)];
     }
-}
 
-[HarmonyPatch(typeof(MainMenu), "Start")]
-class MainMenuPatch
-{
-    static void Postfix()
+    [HarmonyPatch(typeof(MainMenu), "Start")]
+    class MainMenuPatch
     {
-        if (MenuTextPlugin.Instance != null)
+        static void Postfix()
         {
-            MenuTextPlugin.Instance.CreateTMPObject();
+            if (MenuTextPlugin.Instance != null)
+            {
+                MenuTextPlugin.Instance.CreateTMPObject();
+            }
         }
     }
-}
 
-public class ScaleAnimator : MonoBehaviour
-{
-    float speed = 1.5f;
-    float minScale = 0.75f;
-    float maxScale = 1.25f;
-
-    void Update()
+    public class ScaleAnimator : MonoBehaviour
     {
-        float scale = Mathf.Lerp(minScale, maxScale, (Mathf.Sin(Time.time * speed) + 1f) / 2f);
-        transform.localScale = new Vector3(scale, scale, scale);
+        float speed = 1.5f;
+        float minScale = 0.75f;
+        float maxScale = 1.25f;
+
+        void Update()
+        {
+            float scale = Mathf.Lerp(minScale, maxScale, (Mathf.Sin(Time.time * speed) + 1f) / 2f);
+            transform.localScale = new Vector3(scale, scale, scale);
+        }
     }
 }
