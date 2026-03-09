@@ -43,9 +43,9 @@ public class MenuTextPlugin : BaseUnityPlugin
         RectTransform rect = textObj.AddComponent<RectTransform>();
         rect.anchorMin = new Vector2(0.5f, 0.5f);
         rect.anchorMax = new Vector2(0.5f, 0.5f);
-        rect.anchoredPosition = new Vector2(190, 110);
-        rect.rotation = Quaternion.Euler(0, 0, 30);
-        rect.sizeDelta = new Vector2(75, 100);
+        rect.anchoredPosition = new Vector2(-190, 110);
+        rect.rotation = Quaternion.Euler(0, 0, -30);
+        rect.sizeDelta = new Vector2(100, 100);
 
         TextMeshProUGUI tmp = textObj.AddComponent<TextMeshProUGUI>();
         tmp.text = GetRandomLine();
