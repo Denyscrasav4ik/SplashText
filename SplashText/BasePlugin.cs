@@ -12,7 +12,7 @@ public class MenuTextPlugin : BaseUnityPlugin
 {
     public const string ModGUID = "denyscrasav4ik.basicallyukrainian.splashtext";
     public const string ModName = "Splash Text";
-    public const string ModVersion = "1.1.1";
+    public const string ModVersion = "1.2.0";
 
     public static MenuTextPlugin Instance;
 
@@ -114,10 +114,10 @@ public class MenuTextPlugin : BaseUnityPlugin
             return;
         }
 
-        if (canvasObj.transform.Find("RandomMenuText") != null)
+        if (canvasObj.transform.Find("SplashText") != null)
             return;
 
-        GameObject textObj = new GameObject("RandomMenuText");
+        GameObject textObj = new GameObject("SplashText");
         textObj.transform.SetParent(canvasObj.transform, false);
 
         RectTransform rect = textObj.AddComponent<RectTransform>();
@@ -142,6 +142,7 @@ public class MenuTextPlugin : BaseUnityPlugin
     {
         Transform version = menu.transform.Find("Version");
         Transform reminder = menu.transform.Find("Reminder");
+        Transform changelog = menu.transform.Find("ChangelogButton");
 
         float offset = -30f;
 
@@ -156,33 +157,48 @@ public class MenuTextPlugin : BaseUnityPlugin
             RectTransform rect = reminder.GetComponent<RectTransform>();
             rect.anchoredPosition += new Vector2(0, offset);
         }
+        if (changelog != null)
+        {
+            RectTransform rect = changelog.GetComponent<RectTransform>();
+            rect.anchoredPosition += new Vector2(0, offset);
+        }
     }
 
     string GetRandomLine()
     {
         bool ukrainizationInstalled = Chainloader.PluginInfos.ContainsKey("Ukrainization");
-
         string fileName = ukrainizationInstalled ? "UA.txt" : "EN.txt";
 
-        string path = Path.Combine(
+        string basePath = Path.Combine(
             Application.streamingAssetsPath,
             "Modded",
-            ModGUID,
-            fileName
+            ModGUID
         );
 
-        var lines = new System.Collections.Generic.List<string>();
+        var lines = new List<string>();
 
-        if (File.Exists(path))
+        if (Directory.Exists(basePath))
         {
-            lines.AddRange(
-                File.ReadAllLines(path)
-                .Where(l => !string.IsNullOrWhiteSpace(l))
-            );
+            var folders = Directory.GetDirectories(basePath);
+
+            foreach (var folder in folders)
+            {
+                string filePath = Path.Combine(folder, fileName);
+
+                if (!File.Exists(filePath))
+                    continue;
+
+                var fileLines = File.ReadAllLines(filePath)
+                    .Where(l => !string.IsNullOrWhiteSpace(l));
+
+                lines.AddRange(fileLines);
+
+                Logger.LogInfo($"Loaded splashes from {filePath}");
+            }
         }
         else
         {
-            Logger.LogWarning($"Text file not found: {path}");
+            Logger.LogWarning($"Splash folder not found: {basePath}");
         }
 
         if (ukrainizationInstalled)
@@ -191,7 +207,7 @@ public class MenuTextPlugin : BaseUnityPlugin
             lines.AddRange(ModdedSplashesEN);
 
         if (lines.Count == 0)
-            return "No splash texts.";
+            return "<color=red>No splash texts...";
 
         return lines[Random.Range(0, lines.Count)];
     }
